@@ -1,0 +1,14 @@
+import "Speech.idsl";
+import "ASRPublish.idsl";
+
+Component interactGUI
+{
+    Communications
+    {
+        requires Speech;
+        subscribesTo ASRPublish;
+    };
+    language python;
+    gui Qt(QWidget);
+};
+

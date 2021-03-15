@@ -1,0 +1,11 @@
+import "ASRPublish.idsl";
+
+Component rec
+{
+    Communications
+    {
+        publishes ASRPublish;
+    };
+    language python;
+};
+

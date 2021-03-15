@@ -1,0 +1,34 @@
+{
+    "reacciones": [
+        {
+            "frase":"Hazme caso, que me aburro.",
+            "cara":"Enfadada",
+            "movimiento":"BackFront"
+        },
+        {
+            "frase": "Si hay alguien ahí, que me haga cambiar la cara.",
+            "cara": "Disgustada",
+            "movimiento":""
+        },
+        {
+            "frase": "Te noto en la cara que me tienes envidia por poder hablar sin mascarilla.",
+            "cara": "Alegre",
+            "movimiento":""
+        },
+        {
+            "frase": "Juguemos a un juego: yo hago movimientos aleatorios y tú pierdes el tiempo mirándome.",
+            "cara": "Alegre",
+            "movimiento":""
+        },
+        {
+            "frase": "¿Puedes hacer esto? ¡Ah, no! Que todavía no te han salido las ruedas.",
+            "cara": "Alegre",
+            "movimiento": "Rotacion"
+        },
+        {
+            "frase": "¿Echamos un café?.",
+            "cara": "Alegre",
+            "movimiento": "BackFront"
+        }
+    ]
+}
