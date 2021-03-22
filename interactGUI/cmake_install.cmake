@@ -1,4 +1,4 @@
-# Install script for directory: /media/sf_Compartida_Linux/WorkspaceRoboComp/interactGUI
+# Install script for directory: /home/pilar/Desarrollo/Interactive-EBO/interactGUI
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -37,14 +37,9 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
-# Set default install directory permissions.
-if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "/usr/bin/objdump")
-endif()
-
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/media/sf_Compartida_Linux/WorkspaceRoboComp/interactGUI/src/cmake_install.cmake")
+  include("/home/pilar/Desarrollo/Interactive-EBO/interactGUI/src/cmake_install.cmake")
 
 endif()
 
@@ -56,5 +51,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/media/sf_Compartida_Linux/WorkspaceRoboComp/interactGUI/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/pilar/Desarrollo/Interactive-EBO/interactGUI/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
