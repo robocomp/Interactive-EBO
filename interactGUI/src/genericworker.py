@@ -39,7 +39,7 @@ import RoboCompSpeech
 
 import asrpublishI
 
-sys.path.append(os.path.dirname(__file__))
+
 try:
     from ui_mainUI import *
 except:
