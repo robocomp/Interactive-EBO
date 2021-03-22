@@ -1,34 +1,88 @@
 {
-    "reacciones": [
+  "reacciones": [
+    {
+      "Alegre": [
         {
-            "frase":"Hazme caso, que me aburro.",
-            "cara":"Enfadada",
-            "movimiento":"BackFront"
+          "frase": "Me siento muy feliz hoy.",
+          "movimiento": "Rotacion"
         },
         {
-            "frase": "Si hay alguien ahí, que me haga cambiar la cara.",
-            "cara": "Disgustada",
-            "movimiento":""
-        },
-        {
-            "frase": "Te noto en la cara que me tienes envidia por poder hablar sin mascarilla.",
-            "cara": "Alegre",
-            "movimiento":""
-        },
-        {
-            "frase": "Juguemos a un juego: yo hago movimientos aleatorios y tú pierdes el tiempo mirándome.",
-            "cara": "Alegre",
-            "movimiento":""
-        },
-        {
-            "frase": "¿Puedes hacer esto? ¡Ah, no! Que todavía no te han salido las ruedas.",
-            "cara": "Alegre",
-            "movimiento": "Rotacion"
-        },
-        {
-            "frase": "¿Echamos un café?.",
-            "cara": "Alegre",
-            "movimiento": "BackFront"
+          "frase": "Hoy puede ser un gran día.",
+          "movimiento": "Rotacion"
         }
-    ]
+      ]
+    },
+    {
+      "Enfadada": [
+        {
+          "frase": "Estoy harto de todo.",
+          "movimiento": "BackFront"
+        },
+        {
+          "frase": "Todo me sale mal.",
+          "movimiento": "BackFront"
+        }
+      ]
+    },
+    {
+      "Disgustada": [
+        {
+          "frase": "Que aburrimieeeeeeento.",
+          "movimiento": "BackFront"
+        },
+        {
+          "frase": "Jope.",
+          "movimiento": "BackFront"
+        }
+      ]
+    },
+        {
+      "Triste": [
+        {
+          "frase": "Solo quiero dormir.",
+          "movimiento": "BackFront"
+        },
+        {
+          "frase": "Vaya día llevo hoy.",
+          "movimiento": "BackFront"
+        }
+      ]
+    },
+        {
+      "Neutral": [
+        {
+          "frase": "Me apetece comer sopa.",
+          "movimiento": "BackFront"
+        },
+        {
+          "frase": "Estoy en estado neutral.",
+          "movimiento": "BackFront"
+        }
+      ]
+    },
+        {
+      "Sorpresa": [
+        {
+          "frase": "¡Que guay!.",
+          "movimiento": "BackFront"
+        },
+        {
+          "frase": "¡Está muy chulo!",
+          "movimiento": "BackFront"
+        }
+      ]
+    },
+        {
+      "Miedo": [
+        {
+          "frase": "¡Aléjate de mí!.",
+          "movimiento": "BackFront"
+        },
+        {
+          "frase": "Te odio.",
+          "movimiento": "BackFront"
+        }
+      ]
+    }
+  ]
 }

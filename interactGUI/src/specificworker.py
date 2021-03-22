@@ -29,7 +29,6 @@ import json
 #sys.path.insert(0, os.path.join(os.getenv('HOME'), ".learnblock", "clients"))
 
 import pyaudio
-#import speech_recognition as sr
 
 from learnbot_dsl.Clients import EBO_sim
 from learnbot_dsl.Clients import EBO_remote_sim
@@ -52,7 +51,7 @@ caracteresaeliminar = [".a", ".m", ".t", ".s"]
 class SpecificWorker(GenericWorker):
     def __init__(self, proxy_map, startup_check=False):
         super(SpecificWorker, self).__init__(proxy_map)
-        self.Period = 2000
+        self.Period = 200
         if startup_check:
             self.startup_check()
         else:
@@ -72,19 +71,31 @@ class SpecificWorker(GenericWorker):
         self.ui.respuesta.setReadOnly(True)
         self.ui.si.clicked.connect(self.afirmacion)
         self.ui.no.clicked.connect(self.negacion)
-        self.ui.botonmiedo.clicked.connect(self.caraMiedo)
-        self.ui.botonalegria.clicked.connect(self.caraAlegre)
-        self.ui.botonsorpresa.clicked.connect(self.caraSorpresa)
-        self.ui.botontristeza.clicked.connect(self.caraTriste)
-        self.ui.botonneutral.clicked.connect(self.caraNeutral)
-        self.ui.botondisgustado.clicked.connect(self.caraDisgustada)
-        self.ui.botonenfadado.clicked.connect(self.caraEnfadada)
+        self.ui.botonmiedo.clicked.connect(self.estadoMiedo)
+        self.ui.botonalegria.clicked.connect(self.estadoAlegre)
+        self.ui.botonsorpresa.clicked.connect(self.estadoSorpresa)
+        self.ui.botontristeza.clicked.connect(self.estadoTriste)
+        self.ui.botonneutral.clicked.connect(self.estadoNeutral)
+        self.ui.botondisgustado.clicked.connect(self.estadoDisgustada)
+        self.ui.botonenfadado.clicked.connect(self.estadoEnfadada)
+        self.ui.mandarfrase.clicked.connect(self.enviarfrasedesplegable)
+
         self.select_robot()
         self.accionaleatoria = False
-        self.caraactual = "Neutral"
+        self.estadoactual = "Neutral"
+        self.posestadoactual = 4
         self.sec = randint(1, 3)
         self.instlastaction = time.time()
         self.start_time = self.instlastaction
+        self.timemax = 1
+        self.timemin = 1
+        self.velmax = 20
+        self.velmin = 20
+        self.angmax = 90
+        self.angmin = -self.angmax
+        self.frecmovementmin = 1
+        self.frecmovementmax = 3
+        self.actividadaleatoria = False
 
     def __del__(self):
         print('SpecificWorker destructor')
@@ -94,24 +105,25 @@ class SpecificWorker(GenericWorker):
 
     @QtCore.Slot()
     def compute(self):
-        if time.time() - self.start_time > self.sec:
-            if not self.accionaleatoria:
-                choice([self.randomMovementbackfront(), self.randomMovementrotate()])
-                self.start_time = time.time()
-                self.sec = randint(1, 3)
 
-        if time.time() - self.instlastaction > 10:
-            self.accionaleatoria = True
-            jsonposition = randint(0, len(jsonreacciones["reacciones"])-1)
-            self.speech_proxy.say(jsonreacciones["reacciones"][jsonposition]["frase"], True)
-            self.strtoface(jsonreacciones["reacciones"][jsonposition]["cara"])
-            self.enviarmovimiento(jsonreacciones["reacciones"][jsonposition]["movimiento"])
-            self.accionaleatoria = False
+        if (self.ui.comportamientoaleatorio.isChecked() == True):
+            if time.time() - self.start_time > self.sec:
+                if not self.accionaleatoria:
+                    choice([self.randomMovementbackfront(), self.randomMovementrotate()])
+                    self.randomMovementrotate()
 
-        if (self.ui.grabar.isChecked() == True):
+            if time.time() - self.instlastaction > 10:
+                self.accionaleatoria = True
+                jsonposition = randint(0, len(jsonreacciones["reacciones"][self.posestadoactual][self.estadoactual]) - 1)
+                self.speech_proxy.say(jsonreacciones["reacciones"][self.posestadoactual][self.estadoactual][jsonposition]["frase"], True)
+                # self.enviarmovimiento(jsonreacciones["reacciones"][self.estadoactual][jsonposition]["movimiento"])
+                self.accionaleatoria = False
+                self.instlastaction = time.time()
+
+        if (self.ui.grabar_2.isChecked() == True):
             if(self.textograbadoparamostrar != ""):
                self.ui.respuesta.setPlainText(self.textograbadoparamostrar)
-               self.estructurajson["conversacion"].append({'usuario': self.usuario + " (grabado)", 'texto': self.textograbadoparamostrar, "emocionebo": self.caraactual, 'hora': time.strftime("%H:%M:%S")})
+               self.estructurajson["conversacion"].append({'usuario': self.usuario + " (grabado)", 'texto': self.textograbadoparamostrar, "emocionebo": self.estadoactual, 'hora': time.strftime("%H:%M:%S")})
                self.textograbadoparamostrar = ""
         self.textograbadoparamostrar = ""
 
@@ -144,9 +156,10 @@ class SpecificWorker(GenericWorker):
         self.usuario = self.ui.nombreaintroducir.text()
 
     def mandarvoz(self):
+        print(self.ui.textoaenviar.text())
         saludo = ["¡.aBuenos días, " + self.usuario + "!", "¡.aQue alegría verte, " + self.usuario + "!"]
         despedida = ["¡.aNos vemos pronto, " + self.usuario + "!"]
-        if (self.usuario != ""):
+        if (self.usuario != ""):            
             textoadecir = self.ui.textoaenviar.text()
             self.ui.textoaenviar.clear()
             if(textoadecir.find(":)") != -1):
@@ -164,8 +177,8 @@ class SpecificWorker(GenericWorker):
                         print(textoadecir)
                         self.speech_proxy.say(textoadecir, True)
                         self.estructurajson["conversacion"].append(
-                            {'usuario': "Ebo", 'texto': textoadecir, "emocionebo": self.caraactual,
-                             'hora': time.strftime("%H:%M:%S")})
+                            {'usuario': "Ebo", 'texto': textoadecir, "emocionebo": self.estadoactual,
+                                'hora': time.strftime("%H:%M:%S")})
                     self.caraAlegre()
                     self.ui.muestramensajes.setPlainText("¡Ebo está divirtiéndose!.")
                 elif(textoadecir.find(".s") != -1):
@@ -174,7 +187,7 @@ class SpecificWorker(GenericWorker):
                     if(textoadecir != ""):
                         print(textoadecir)
                         self.speech_proxy.say(textoadecir, True)
-                        self.estructurajson["conversacion"].append({'usuario': "Ebo", 'texto': textoadecir, "emocionebo": self.caraactual, 'hora': time.strftime("%H:%M:%S")})
+                        self.estructurajson["conversacion"].append({'usuario': "Ebo", 'texto': textoadecir, "emocionebo": self.estadoactual, 'hora': time.strftime("%H:%M:%S")})
                     self.caraSorpresa()
                     self.ui.muestramensajes.setPlainText("¡Ebo se ha sorprendido!")
                 elif(textoadecir.find(".t") != -1):
@@ -183,7 +196,7 @@ class SpecificWorker(GenericWorker):
                     if(textoadecir != ""):
                         print(textoadecir)
                         self.speech_proxy.say(textoadecir, True)
-                        self.estructurajson["conversacion"].append({'usuario': "Ebo", 'texto': textoadecir, "emocionebo": self.caraactual, 'hora': time.strftime("%H:%M:%S")})
+                        self.estructurajson["conversacion"].append({'usuario': "Ebo", 'texto': textoadecir, "emocionebo": self.estadoactual, 'hora': time.strftime("%H:%M:%S")})
                     self.caraTriste()
                     self.ui.muestramensajes.setPlainText("Ebo está triste.")
                 else:
@@ -192,14 +205,19 @@ class SpecificWorker(GenericWorker):
                     if(textoadecir != ""):
                         print(textoadecir)
                         self.speech_proxy.say(textoadecir, True)
-                        self.estructurajson["conversacion"].append({'usuario': "Ebo", 'texto': textoadecir, "emocionebo": self.caraactual, 'hora': time.strftime("%H:%M:%S")})
-
+                        self.estructurajson["conversacion"].append({'usuario': "Ebo", 'texto': textoadecir, "emocionebo": self.estadoactual, 'hora': time.strftime("%H:%M:%S")})
             except:
                 print("Error")
         else:
             self.ui.muestramensajes.setPlainText("Se necesita un nombre de usuario.")
             self.ui.textoaenviar.clear()
         self.instlastaction = time.time()
+
+    def enviarfrasedesplegable(self):
+        textoadecir = self.ui.frasesPredefinidas.currentText()
+        print(textoadecir)
+        self.speech_proxy.say(textoadecir, True)
+        self.estructurajson["conversacion"].append({'usuario': "Ebo", 'texto': textoadecir, "emocionebo": self.estadoactual, 'hora': time.strftime("%H:%M:%S")})
 
     def exportarapdf(self):
         if (self.usuario != ""):
@@ -227,26 +245,26 @@ class SpecificWorker(GenericWorker):
     def almacenartextoescuchado(self):
         if (self.usuario != ""):
             escucha = self.ui.textoescuchado.text()
-            self.estructurajson["conversacion"].append({'usuario': self.usuario + " (escrito)", 'texto': escucha, "emocionebo": self.caraactual, 'hora': time.strftime("%H:%M:%S")})
+            self.estructurajson["conversacion"].append({'usuario': self.usuario + " (escrito)", 'texto': escucha, "emocionebo": self.estadoactual, 'hora': time.strftime("%H:%M:%S")})
         else:
             self.ui.muestramensajes.setPlainText("Se necesita un nombre de usuario.")
         self.ui.textoescuchado.clear()
 
-    def strtoface(self, strface):
-        if(strface == "Triste"):
-            self.caraTriste()
-        elif(strface == "Alegre"):
-            self.caraAlegre()
-        elif (strface == "Enfadada"):
-            self.caraEnfadada()
-        elif (strface == "Neutral"):
-            self.caraNeutral()
-        elif (strface == "Disgustada"):
-            self.caraDisgustada()
-        elif (strface == "Sorpresa"):
-            self.caraSorpresa()
-        else:
-            self.caraMiedo()
+    # def strtoface(self, strface):
+    #     if(strface == "Triste"):
+    #         self.caraTriste()
+    #     elif(strface == "Alegre"):
+    #         self.caraAlegre()
+    #     elif (strface == "Enfadada"):
+    #         self.caraEnfadada()
+    #     elif (strface == "Neutral"):
+    #         self.caraNeutral()
+    #     elif (strface == "Disgustada"):
+    #         self.caraDisgustada()
+    #     elif (strface == "Sorpresa"):
+    #         self.caraSorpresa()
+    #     else:
+    #         self.caraMiedo()
 
     def enviarmovimiento(self, mov):
         if mov == "Rotacion":
@@ -272,66 +290,129 @@ class SpecificWorker(GenericWorker):
                 self.robot.setBaseSpeed(150, 0)
             self.robot.setBaseSpeed(0, 0)
 
-    def caraTriste(self):
+    def estadoTriste(self):
         self.robot.express(Emotions.Sadness)
-        self.caraactual = "Triste"
+        self.estadoactual = "Triste"
+        self.posestadoactual = 3
         self.instlastaction = time.time()
+        self.timemax = 0.9
+        self.timemin = 1.2
+        self.velmax = 10
+        self.velmin = 1
+        self.frecmovementmin = 4
+        self.frecmovementmax = 8
+        self.angmax = 30
+        self.speech_proxy.setVoice(self.estadoactual)
 
-    def caraAlegre(self):
+    def estadoAlegre(self):
         self.robot.express(Emotions.Joy)
-        self.caraactual = "Alegre"
+        self.estadoactual = "Alegre"
+        self.posestadoactual = 0
         self.instlastaction = time.time()
+        self.timemax = 0.15
+        self.timemin = 0.3
+        self.velmax = 140
+        self.velmin = 100
+        self.frecmovementmin = 1
+        self.frecmovementmax = 3
+        self.angmax = 60
+        self.speech_proxy.setVoice(self.estadoactual)
 
-    def caraEnfadada(self):
+    def estadoEnfadada(self):
         self.robot.express(Emotions.Anger)
-        self.caraactual = "Enfadada"
+        self.estadoactual = "Enfadada"
+        self.posestadoactual = 1
         self.instlastaction = time.time()
+        self.timemax = 0.3
+        self.timemin = 0.15
+        self.velmax = 140
+        self.velmin = 100
+        self.frecmovementmin = 0.2
+        self.frecmovementmax = 2
+        self.angmax = 90
+        self.speech_proxy.setVoice(self.estadoactual)
 
-    def caraNeutral(self):
+    def estadoNeutral(self):
         self.robot.express(Emotions.Neutral)
-        self.caraactual = "Neutral"
+        self.estadoactual = "Neutral"
+        self.posestadoactual = 4
         self.instlastaction = time.time()
+        self.timemax = 0.3
+        self.timemin = 0.15
+        self.velmax = 80
+        self.velmin = 60
+        self.frecmovementmin = 2
+        self.frecmovementmax = 4
+        self.angmax = 90
+        self.speech_proxy.setVoice(self.estadoactual)
 
-    def caraDisgustada(self):
+    def estadoDisgustada(self):
         self.robot.express(Emotions.Disgust)
-        self.caraactual = "Disgustada"
+        self.estadoactual = "Disgustada"
+        self.posestadoactual = 2
         self.instlastaction = time.time()
+        self.timemax = 0.7
+        self.timemin = 1
+        self.velmax = 40
+        self.velmin = 20
+        self.frecmovementmin = 4
+        self.frecmovementmax = 8
+        self.angmax = 30
+        self.speech_proxy.setVoice(self.estadoactual)
 
-    def caraSorpresa(self):
+    def estadoSorpresa(self):
         self.robot.express(Emotions.Surprise)
-        self.caraactual = "Sorpresa"
+        self.estadoactual = "Sorpresa"
+        self.posestadoactual = 5
         self.instlastaction = time.time()
+        self.timemax = 0.3
+        self.timemin = 0.15
+        self.velmax = 80
+        self.velmin = 60
+        self.frecmovementmin = 1
+        self.frecmovementmax = 2
+        self.angmax = 50
+        self.speech_proxy.setVoice(self.estadoactual)
 
-    def caraMiedo(self):
+    def estadoMiedo(self):
         self.robot.express(Emotions.Fear)
-        self.caraactual = "Miedo"
+        self.estadoactual = "Miedo"
+        self.posestadoactual = 6
         self.instlastaction = time.time()
+        self.timemax = 0.2
+        self.timemin = 0.15
+        self.velmax = 80
+        self.velmin = 60
+        self.frecmovementmin = 0.3
+        self.frecmovementmax = 1
+        self.angmax = 120
+        self.speech_proxy.setVoice(self.estadoactual)
 
-    def movimientoMiedo(self):
-        tact = time.time()
-        while (time.time() <= tact + 0.25):
-            self.robot.setBaseSpeed(-100, -15)
-        tact = time.time()
-        while (time.time() <= tact + 0.25):
-            self.robot.setBaseSpeed(-100, 15)
-        self.robot.setBaseSpeed(0, 0)
-        self.instlastaction = time.time()
-
-    def movimientoAlegria(self):
-        tact = time.time()
-        while (time.time() <= tact + 0.25):
-            self.robot.setBaseSpeed(100, -15)
-        tact = time.time()
-        while (time.time() <= tact + 0.25):
-            self.robot.setBaseSpeed(100, 15)
-        tact = time.time()
-        while (time.time() <= tact + 0.25):
-            self.robot.setBaseSpeed(-100, -15)
-        tact = time.time()
-        while (time.time() <= tact + 0.25):
-            self.robot.setBaseSpeed(-100, 15)
-        self.robot.setBaseSpeed(0,0)
-        self.instlastaction = time.time()
+    # def movimientoMiedo(self):
+    #     tact = time.time()
+    #     while (time.time() <= tact + 0.25):
+    #         self.robot.setBaseSpeed(-100, -15)
+    #     tact = time.time()
+    #     while (time.time() <= tact + 0.25):
+    #         self.robot.setBaseSpeed(-100, 15)
+    #     self.robot.setBaseSpeed(0, 0)
+    #     self.instlastaction = time.time()
+    #
+    # def movimientoAlegria(self):
+    #     tact = time.time()
+    #     while (time.time() <= tact + 0.25):
+    #         self.robot.setBaseSpeed(100, -15)
+    #     tact = time.time()
+    #     while (time.time() <= tact + 0.25):
+    #         self.robot.setBaseSpeed(100, 15)
+    #     tact = time.time()
+    #     while (time.time() <= tact + 0.25):
+    #         self.robot.setBaseSpeed(-100, -15)
+    #     tact = time.time()
+    #     while (time.time() <= tact + 0.25):
+    #         self.robot.setBaseSpeed(-100, 15)
+    #     self.robot.setBaseSpeed(0,0)
+    #     self.instlastaction = time.time()
 
     def afirmacion(self):
         tact = time.time()
@@ -364,19 +445,27 @@ class SpecificWorker(GenericWorker):
 
     def randomMovementrotate(self):
         tact = time.time()
-        randomtime = uniform(0.05, 0.4)
+        randomtime = uniform(self.timemin, self.timemax)
+        speed = randint(self.velmin, self.velmax)
+        angle = randint(self.angmin, self.angmax)
         while (time.time() <= tact + randomtime):
-            self.robot.setBaseSpeed(randint(80, 120), choice([90, -90]))
+            self.robot.setBaseSpeed(speed, angle)
+        tact = time.time()
+        while (time.time() <= tact + randomtime):
+            self.robot.setBaseSpeed(-speed, angle)
         self.robot.setBaseSpeed(0, 0)
+        self.start_time = time.time()
+        self.sec = uniform(self.frecmovementmin, self.frecmovementmax)
 
     def randomMovementbackfront(self):
         tact = time.time()
-        randomvel = randint(80, 120)
-        randomtime = uniform(0.05, 0.3)
+        randomtime = uniform(self.timemin, self.timemax)
+        speed = randint(self.velmin, self.velmax)
         while (time.time() <= tact + randomtime):
-            self.robot.setBaseSpeed(randomvel, 0)
-            self.robot.setBaseSpeed(-randomvel, 0)
+            self.robot.setBaseSpeed(speed, 0)
+            self.robot.setBaseSpeed(-speed, 0)
         self.robot.setBaseSpeed(0, 0)
-
+        self.start_time = time.time()
+        self.sec = uniform(self.frecmovementmin, self.frecmovementmax)
 
 
