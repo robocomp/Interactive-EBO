@@ -43,3 +43,6 @@ class SpeechI(Speech):
 
     def say(self, text, owerwrite, c):
         return self.worker.say(text, owerwrite)
+
+    def setVoice(self, state, c):
+        return self.worker.setVoice(state)

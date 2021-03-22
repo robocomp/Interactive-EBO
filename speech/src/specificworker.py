@@ -22,7 +22,7 @@
 import subprocess
 import sys
 from google_speech import Speech
-import pyttsx3
+
 sys.path.append("../")
 try:
 	from Queue import Queue
@@ -45,8 +45,9 @@ sys.path.append('/opt/robocomp/lib')
 class SpecificWorker(GenericWorker):
     def __init__(self, proxy_map, startup_check=False):
         super(SpecificWorker, self).__init__(proxy_map)
-        self.Period = 2000
-        self.audioenviado = False
+        self.Period = 0
+        self.estadoactual = "Neutral"
+        self.efectovoz = ("tempo", "1")
         self.text_queue = Queue(max_queue)
         if startup_check:
             self.startup_check()
@@ -84,7 +85,6 @@ class SpecificWorker(GenericWorker):
 
     def habla(self, text):
         try:
-            from libs.google_TTS import google_tts_say
             print(text)
             self.emotionalmotor_proxy.talking(True)
             self.pyttshtts(text)
@@ -112,14 +112,32 @@ class SpecificWorker(GenericWorker):
         self.text_queue.put(text)
         return True
 
+    def setVoice(self, state):
+        if(state == "Enfadada"):
+            self.efectovoz = ("gain", "7", "pitch", "-5")
+        elif(state == "Alegre"):
+            self.efectovoz = ("tempo", "1.2")
+        elif(state == "Disgustada"):
+            self.efectovoz = ("tempo", "0.7")
+        elif (state == "Triste"):
+            self.efectovoz = ("speed", "0.8")
+        elif (state == "Neutral"):
+            self.efectovoz = ("tempo", "1")
+        elif (state == "Sorpresa"):
+            self.efectovoz = ("speed", "1.2")
+        else:
+            self.efectovoz = ("tempo", "1.6")
+        return True
+
     def pyttshtts(self, text):
         lang = "es"
         speech = Speech(text, lang)
-        speech.play()
+        speech.play(self.efectovoz)
 
         # you can also apply audio effects while playing (using SoX)
         # see http://sox.sourceforge.net/sox.html#EFFECTS for full effect documentation
-        sox_effects1 = ("speed", "1")
-        # sox_effects2 = ("tempo", "0.5")
-        speech.play(sox_effects1)
+        #efectoaburrido1 = ("speed", "0.8")
+        #efectoaburrido2 = ("tempo", "0.8")
+        #efectoanimado = ("tempo", "0.8")
+        #speech.play(efectoaburrido2)
         # speech.play(sox_effects2)

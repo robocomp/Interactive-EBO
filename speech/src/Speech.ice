@@ -14,6 +14,7 @@ module RoboCompSpeech
 	{
 		bool isBusy ();
 		bool say (string text, bool owerwrite);
+		bool setVoice (string state);
 	};
 };
 
